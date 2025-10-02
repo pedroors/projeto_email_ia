@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisador de E-mail com IA</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+        }
+
+        h1 {
+            color: #4a4a4a;
+            text-align: center;
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+            margin-top: 20px;
+            box-sizing: border-box;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #resultado {
+            margin-top: 30px;
+            background-color: #e9ecef;
+            padding: 20px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        #resultado h2 {
+            margin-top: 0;
+            color: #007bff;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Analisador de E-mail com IA</h1>
+        <textarea id="emailTexto" placeholder="Cole o texto do seu e-mail aqui..."></textarea>
+        <button onclick="analisarEmail()">Analisar E-mail</button>
+        <div id="resultado">
+            <h2>Resultado da Análise</h2>
+            <p><strong>Categoria:</strong> <span id="categoria"></span></p>
+            <p><strong>Resposta Sugerida:</strong> <span id="sugestao"></span></p>
+        </div>
+    </div>
+
+    <script>
+        async function analisarEmail() {
+            const texto = document.getElementById('emailTexto').value;
+            const resultadoDiv = document.getElementById('resultado');
+            const categoriaSpan = document.getElementById('categoria');
+            const sugestaoSpan = document.getElementById('sugestao');
+
+            if (texto.trim() === '') {
+                alert('Por favor, insira o texto do e-mail.');
+                return;
+            }
+
+            // Mostra um feedback de "carregando"
+            categoriaSpan.textContent = 'Analisando...';
+            sugestaoSpan.textContent = 'Analisando...';
+            resultadoDiv.style.display = 'block';
+
+            try {
+                const response = await fetch('/analisar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email: texto })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    categoriaSpan.textContent = data.categoria;
+                    sugestaoSpan.textContent = data.sugestao_resposta;
+                } else {
+                    throw new Error(data.erro || 'Ocorreu um erro desconhecido.');
+                }
+            } catch (error) {
+                categoriaSpan.textContent = 'Erro';
+                sugestaoSpan.textContent = error.message;
+            }
+        }
+    </script>
+</body>
+
+</html>
