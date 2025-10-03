@@ -1,11 +1,7 @@
 Flask
-
 google-generativeai
-
 PyMuPDF
-
+gunicorn
 python-dotenv
-
 torch
-
 transformers
