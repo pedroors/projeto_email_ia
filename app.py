@@ -103,6 +103,3 @@ def analisar():
         'categoria': categoria.capitalize(),
         'sugestao_resposta': sugestao_resposta
     })
-
-if __name__ == '__main__':
-    app.run(debug=True)
