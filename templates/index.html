@@ -4,419 +4,743 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analisador Inteligente de E-mails</title>
+    <title>Classificador Inteligente de E-mails | AI Email Analyzer</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js`;</script>
-    
-<style>
-    :root {
-        --primary-gradient: linear-gradient(45deg, #6a11cb 0%, #2575fc 100%);
-        --background-color: #f0f2f5;
-        --card-background: #ffffff;
-        --text-primary: #1c1e21;
-        --text-secondary: #606770;
-        --border-color: #dddfe2;
-        --success-bg: #e9f5ee;
-        --success-text: #0b8739;
-        --font-family: 'Poppins', sans-serif;
-    }
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';</script>
 
-    * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-    }
+    <style>
+        :root {
+            --primary: hsl(240, 100%, 65%);
+            --primary-dark: hsl(240, 100%, 55%);
+            --secondary: hsl(280, 100%, 70%);
+            --background: hsl(240, 20%, 97%);
+            --surface: hsl(0, 0%, 100%);
+            --surface-hover: hsl(240, 20%, 99%);
+            --text-primary: hsl(240, 20%, 10%);
+            --text-secondary: hsl(240, 10%, 45%);
+            --border: hsl(240, 15%, 90%);
+            --success: hsl(142, 70%, 45%);
+            --success-bg: hsl(142, 70%, 96%);
+            --warning: hsl(38, 90%, 55%);
+            --warning-bg: hsl(38, 90%, 96%);
+            --error: hsl(0, 70%, 55%);
+            --error-bg: hsl(0, 70%, 96%);
+            --info: hsl(210, 90%, 55%);
+            --info-bg: hsl(210, 90%, 96%);
+            --gradient-primary: linear-gradient(135deg, hsl(240, 100%, 65%) 0%, hsl(280, 100%, 70%) 100%);
+            --gradient-bg: linear-gradient(180deg, hsl(240, 20%, 99%) 0%, hsl(240, 20%, 95%) 100%);
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            --radius: 12px;
+            --radius-lg: 16px;
+            --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
 
-    body {
-        font-family: var(--font-family);
-        background-color: var(--background-color);
-        color: var(--text-primary);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-        padding: 20px;
-    }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-    /* Container Principal */
-    .analyzer-container {
-        background-color: var(--card-background);
-        padding: 40px;
-        border-radius: 12px;
-        box-shadow: 0 12px 28px 0 rgba(0, 0, 0, 0.08);
-        width: 100%;
-        max-width: 700px;
-        transition: all 0.3s ease;
-    }
+        body {
+            font-family: var(--font);
+            background: var(--gradient-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
 
-    /* Cabeçalho */
-    .card-header {
-        text-align: center;
-        margin-bottom: 30px;
-    }
-    .card-header .fa-sparkle {
-        font-size: 2rem;
-        background: var(--primary-gradient);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        margin-bottom: 10px;
-    }
-    .card-header h1 {
-        font-weight: 600;
-        font-size: 1.8rem;
-        margin-bottom: 5px;
-    }
-    .card-header p {
-        color: var(--text-secondary);
-        font-size: 1rem;
-    }
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 48px;
+            max-width: 800px;
+            animation: fadeInDown 0.6s ease-out;
+        }
 
-    /* Área de Texto */
-    .input-area textarea {
-        width: 100%;
-        height: 140px;
-        padding: 15px;
-        border-radius: 8px;
-        border: 1px solid var(--border-color);
-        font-size: 16px;
-        font-family: var(--font-family);
-        resize: vertical;
-        transition: border-color 0.3s, box-shadow 0.3s;
-    }
-    .input-area textarea:focus {
-        outline: none;
-        border-color: #2575fc;
-        box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.2);
-    }
+        .logo-container {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 72px;
+            height: 72px;
+            background: var(--gradient-primary);
+            border-radius: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 24px -4px rgba(99, 102, 241, 0.4);
+            animation: float 3s ease-in-out infinite;
+        }
 
-    /* Separador "OU" */
-    .separator {
-        display: flex;
-        align-items: center;
-        text-align: center;
-        margin: 25px 0;
-        color: var(--text-secondary);
-    }
-    .separator::before, .separator::after {
-        content: '';
-        flex: 1;
-        border-bottom: 1px solid var(--border-color);
-    }
-    .separator span {
-        padding: 0 15px;
-        font-weight: 500;
-        font-size: 0.9rem;
-    }
+        .logo-container i {
+            font-size: 32px;
+            color: white;
+        }
 
-    /* Área de Upload de Arquivo */
-    .file-upload-area label {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-        padding: 30px;
-        border: 2px dashed var(--border-color);
-        border-radius: 8px;
-        cursor: pointer;
-        transition: background-color 0.3s, border-color 0.3s;
-        color: var(--text-secondary);
-    }
-    .file-upload-area label:hover {
-        background-color: #f7f8fa;
-        border-color: #2575fc;
-    }
-    .file-upload-area i {
-        font-size: 2.5rem;
-        margin-bottom: 15px;
-        color: #6a11cb;
-    }
-    .file-upload-area span {
-        font-weight: 500;
-    }
+        .header h1 {
+            font-size: 42px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
+        }
 
-    /* Botão Principal */
-    button {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 10px;
-        width: 100%;
-        padding: 15px;
-        background: var(--primary-gradient);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-size: 18px;
-        font-weight: 600;
-        cursor: pointer;
-        margin-top: 30px;
-        transition: transform 0.2s, box-shadow 0.3s;
-    }
-    button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-    }
+        .header p {
+            font-size: 18px;
+            color: var(--text-secondary);
+            font-weight: 400;
+            max-width: 600px;
+            margin: 0 auto;
+        }
 
-    /* Área de Resultado */
-    #resultado {
-        margin-top: 30px;
-        background-color: var(--card-background);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        display: none; /* Inicia oculto */
-        opacity: 0;
-        transition: opacity 0.5s ease-in-out;
-    }
-    .resultado-header {
-        padding: 15px 20px;
-        background-color: #f7f8fa;
-        border-bottom: 1px solid var(--border-color);
-        border-radius: 8px 8px 0 0;
-    }
-    .resultado-header h2 {
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin: 0;
-    }
-    .resultado-body {
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-    }
-    .resultado-item {
-        line-height: 1.6;
-    }
-    .item-title {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: var(--text-secondary);
-        margin-bottom: 5px;
-    }
-    .item-title i {
-        color: #2575fc;
-    }
-    #categoria, #sugestao {
-        padding-left: 23px; /* Alinha com o texto do título */
-        display: block;
-    }
-    .file-info-container {
-    display: none; /* Começa escondido */
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 25px;
-    border: 2px solid var(--border-color); /* Borda sólida para indicar "preenchido" */
-    border-radius: 8px;
-    background-color: #f7f8fa;
-    color: var(--text-primary);
-}
+        /* Main Container */
+        .analyzer-container {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            max-width: 800px;
+            padding: 48px;
+            border: 1px solid var(--border);
+            animation: fadeInUp 0.6s ease-out 0.2s both;
+        }
 
-.file-info-container i {
-    font-size: 2rem;
-    color: var(--primary-gradient);
-    background: var(--primary-gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
+        /* Input Section */
+        .input-section {
+            margin-bottom: 32px;
+        }
 
-.file-info-container span {
-    flex-grow: 1;
-    margin: 0 15px;
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis; /* Adiciona "..." se o nome do arquivo for muito longo */
-}
+        .input-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
 
-.remove-btn {
-    width: 30px;
-    height: 30px;
-    border: none;
-    background-color: #e4e6eb;
-    color: var(--text-secondary);
-    border-radius: 50%;
-    font-size: 20px;
-    font-weight: bold;
-    line-height: 28px; /* Alinha o "×" verticalmente */
-    cursor: pointer;
-    padding: 0;
-    margin: 0;
-    transition: background-color 0.2s, color 0.2s;
-}
+        .input-label i {
+            color: var(--primary);
+            font-size: 16px;
+        }
 
-.remove-btn:hover {
-    background-color: #d8dadf;
-    color: var(--text-primary);
-    transform: none; /* Remove o efeito de levantar do botão principal */
-    box-shadow: none;
-}
-</style>
+        textarea {
+            width: 100%;
+            min-height: 160px;
+            padding: 16px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 15px;
+            font-family: var(--font);
+            resize: vertical;
+            transition: all 0.3s ease;
+            background: var(--surface);
+            color: var(--text-primary);
+        }
 
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        textarea::placeholder {
+            color: var(--text-secondary);
+        }
+
+        /* Divider */
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 32px 0;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, transparent, var(--border), transparent);
+        }
+
+        .divider span {
+            padding: 0 20px;
+        }
+
+        /* Upload Area */
+        .upload-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .upload-area {
+            position: relative;
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 48px 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--surface-hover);
+            display: block;
+            width: 100%;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.02);
+        }
+
+        .upload-area i {
+            font-size: 48px;
+            color: var(--primary);
+            margin-bottom: 16px;
+            display: block;
+            opacity: 0.8;
+        }
+
+        .upload-area .upload-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .upload-area .upload-hint {
+            font-size: 13px;
+            color: var(--text-secondary);
+            display: block;
+        }
+
+        .file-info {
+            display: none;
+            align-items: center;
+            gap: 16px;
+            padding: 20px;
+            border: 2px solid var(--primary);
+            border-radius: var(--radius);
+            background: rgba(99, 102, 241, 0.05);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .file-info.active {
+            display: flex;
+        }
+
+        .file-icon {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--gradient-primary);
+            border-radius: 10px;
+            flex-shrink: 0;
+        }
+
+        .file-icon i {
+            font-size: 20px;
+            color: white;
+        }
+
+        .file-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .file-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 2px;
+        }
+
+        .file-status {
+            font-size: 12px;
+            color: var(--success);
+            font-weight: 500;
+        }
+
+        .remove-file-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: rgba(0, 0, 0, 0.05);
+            color: var(--text-secondary);
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .remove-file-btn:hover {
+            background: var(--error-bg);
+            color: var(--error);
+        }
+
+        /* Button */
+        .analyze-btn {
+            width: 100%;
+            padding: 18px 32px;
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px -4px rgba(99, 102, 241, 0.5);
+        }
+
+        .analyze-btn:active {
+            transform: translateY(0);
+        }
+
+        .analyze-btn i {
+            font-size: 18px;
+        }
+
+        /* Results */
+        .results-container {
+            margin-top: 40px;
+            border-radius: var(--radius-lg);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            display: none;
+            animation: fadeInUp 0.4s ease-out;
+        }
+
+        .results-container.active {
+            display: block;
+        }
+
+        .results-header {
+            padding: 24px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(168, 85, 247, 0.05) 100%);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .results-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .results-header h2 i {
+            color: var(--primary);
+        }
+
+        .results-body {
+            padding: 32px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        .result-item {
+            position: relative;
+            padding-left: 48px;
+        }
+
+        .result-icon {
+            position: absolute;
+            left: 0;
+            top: 2px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--gradient-primary);
+            border-radius: 8px;
+        }
+
+        .result-icon i {
+            font-size: 16px;
+            color: white;
+        }
+
+        .result-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 8px;
+        }
+
+        .result-content {
+            font-size: 15px;
+            color: var(--text-primary);
+            line-height: 1.7;
+            font-weight: 500;
+        }
+
+        .loading {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes dots {
+
+            0%,
+            20% {
+                content: '.';
+            }
+
+            40% {
+                content: '..';
+            }
+
+            60%,
+            100% {
+                content: '...';
+            }
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 16px;
+            }
+
+            .header {
+                margin-bottom: 32px;
+            }
+
+            .header h1 {
+                font-size: 32px;
+            }
+
+            .header p {
+                font-size: 16px;
+            }
+
+            .analyzer-container {
+                padding: 32px 24px;
+            }
+
+            .logo-container {
+                width: 64px;
+                height: 64px;
+            }
+
+            .logo-container i {
+                font-size: 28px;
+            }
+
+            .upload-area {
+                padding: 32px 24px;
+            }
+
+            .upload-area i {
+                font-size: 40px;
+            }
+        }
+
+        /* Hidden input */
+        input[type="file"] {
+            display: none;
+        }
+    </style>
 </head>
 
 <body>
-    <div class="analyzer-container">
-        <div class="card-header">
-            <i class="fas fa-sparkle"></i>
-            <h1>Analisador Inteligente de E-mails</h1>
-            <p>Use o poder da IA para classificar e gerar respostas para seus e-mails instantaneamente.</p>
+    <header class="header">
+        <div class="logo-container">
+            <i class="fas fa-brain"></i>
+        </div>
+        <h1>Classificador de E-mails com IA</h1>
+        <p>Análise inteligente de e-mails com classificação de importância e sugestões automáticas de resposta</p>
+    </header>
+
+    <main class="analyzer-container">
+        <section class="input-section">
+            <label class="input-label">
+                <i class="fas fa-envelope"></i>
+                Conteúdo do E-mail
+            </label>
+            <textarea id="emailTexto"
+                placeholder="Cole aqui o texto completo do e-mail que deseja analisar..."></textarea>
+        </section>
+
+        <div class="divider">
+            <span>ou</span>
         </div>
 
-        <div class="input-area">
-            <textarea id="emailTexto" placeholder="Cole o conteúdo do e-mail aqui..."></textarea>
-        </div>
+        <section class="input-section">
+            <div class="input-label">
+                <i class="fas fa-cloud-arrow-up"></i>
+                Enviar Arquivo
+            </div>
+            <div class="upload-wrapper">
+                <input type="file" id="emailArquivo" accept=".txt,.eml,.pdf">
 
-        <div class="separator">
-            <span>OU</span>
-        </div>
+                <label for="emailArquivo" id="uploadLabel" class="upload-area">
+                    <i class="fas fa-file-arrow-up"></i>
+                    <div class="upload-text">Clique para selecionar um arquivo</div>
+                    <div class="upload-hint">Formatos aceitos: .txt, .eml, .pdf</div>
+                </label>
 
-    <div class="file-upload-area">
-        <input type="file" id="emailArquivo" accept=".txt,.eml,.pdf" hidden>
+                <div id="fileInfo" class="file-info">
+                    <div class="file-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="file-details">
+                        <div class="file-name" id="fileName"></div>
+                        <div class="file-status"><i class="fas fa-check-circle"></i> Arquivo carregado</div>
+                    </div>
+                    <button type="button" id="removeFileBtn" class="remove-file-btn" title="Remover arquivo">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
 
-        <label for="emailArquivo" id="uploadLabel">
-            <i class="fas fa-cloud-upload-alt"></i>
-            <span>Clique para selecionar ou arraste um arquivo (.txt, .eml, .pdf)</span>
-        </label>
-
-        <div id="fileInfo" class="file-info-container">
-            <i class="fas fa-file-alt"></i>
-            <span id="fileName"></span>
-            <button id="removeFileBtn" class="remove-btn" title="Remover arquivo">&times;</button>
-        </div>
-    </div>
-        
-        <button onclick="analisarEmail()">
-            <i class="fas fa-rocket"></i> Analisar Agora
+        <button class="analyze-btn" onclick="analisarEmail()">
+            <i class="fas fa-wand-magic-sparkles"></i>
+            Analisar E-mail
         </button>
-        
-        <div id="resultado">
-            <div class="resultado-header">
-                <h2>Resultado da Análise</h2>
+
+        <div id="resultado" class="results-container">
+            <div class="results-header">
+                <h2>
+                    <i class="fas fa-chart-line"></i>
+                    Resultado da Análise
+                </h2>
             </div>
-            <div class="resultado-body">
-                <div class="resultado-item">
-                    <div class="item-title">
-                        <i class="fas fa-tags"></i>
-                        <strong>Categoria:</strong>
+            <div class="results-body">
+                <div class="result-item">
+                    <div class="result-icon">
+                        <i class="fas fa-tag"></i>
                     </div>
-                    <span id="categoria"></span>
+                    <div class="result-label">Classificação</div>
+                    <div class="result-content" id="categoria"></div>
                 </div>
-                <div class="resultado-item">
-                    <div class="item-title">
-                        <i class="fas fa-pen-to-square"></i>
-                        <strong>Resposta Sugerida:</strong>
+                <div class="result-item">
+                    <div class="result-icon">
+                        <i class="fas fa-reply"></i>
                     </div>
-                    <span id="sugestao"></span>
+                    <div class="result-label">Resposta Sugerida</div>
+                    <div class="result-content" id="sugestao"></div>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <script>
-    // Incluindo a configuração do worker do pdf.js
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js`;
+        // Configuração do PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
-    // --- NOVO CÓDIGO PARA FEEDBACK VISUAL ---
-    const arquivoInput = document.getElementById('emailArquivo');
-    const uploadLabel = document.getElementById('uploadLabel');
-    const fileInfoDiv = document.getElementById('fileInfo');
-    const fileNameSpan = document.getElementById('fileName');
-    const removeFileBtn = document.getElementById('removeFileBtn');
+        // Elementos do DOM
+        const arquivoInput = document.getElementById('emailArquivo');
+        const uploadLabel = document.getElementById('uploadLabel');
+        const fileInfoDiv = document.getElementById('fileInfo');
+        const fileNameSpan = document.getElementById('fileName');
+        const removeFileBtn = document.getElementById('removeFileBtn');
 
-    // "Ouvinte" que dispara quando um arquivo é selecionado
-    arquivoInput.addEventListener('change', function() {
-        if (this.files.length > 0) {
-            const fileName = this.files[0].name;
-            fileNameSpan.textContent = fileName; // Mostra o nome do arquivo
+        // Gerenciamento de upload de arquivo
+        arquivoInput.addEventListener('change', function () {
+            if (this.files.length > 0) {
+                const fileName = this.files[0].name;
+                fileNameSpan.textContent = fileName;
+                uploadLabel.style.display = 'none';
+                fileInfoDiv.classList.add('active');
+            }
+        });
 
-            // Esconde o botão de upload e mostra as informações do arquivo
-            uploadLabel.style.display = 'none';
-            fileInfoDiv.style.display = 'flex';
-        }
-    });
+        removeFileBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            arquivoInput.value = '';
+            fileInfoDiv.classList.remove('active');
+            uploadLabel.style.display = 'block';
+        });
 
-    // "Ouvinte" que dispara quando o botão de remover é clicado
-    removeFileBtn.addEventListener('click', function() {
-        arquivoInput.value = ''; // Limpa o arquivo do input (MUITO IMPORTANTE)
+        // Função principal de análise
+        async function analisarEmail() {
+            const textoInput = document.getElementById('emailTexto');
+            const resultadoDiv = document.getElementById('resultado');
+            const categoriaSpan = document.getElementById('categoria');
+            const sugestaoSpan = document.getElementById('sugestao');
 
-        // Esconde as informações do arquivo e mostra o botão de upload novamente
-        fileInfoDiv.style.display = 'none';
-        uploadLabel.style.display = 'flex';
-    });
-    // --- FIM DO NOVO CÓDIGO ---
+            // Exibe loading
+            categoriaSpan.innerHTML = '<span class="loading">Analisando</span>';
+            sugestaoSpan.innerHTML = '<span class="loading">Gerando resposta</span>';
+            resultadoDiv.classList.add('active');
 
+            const formData = new FormData();
+            let emailText = '';
 
-    async function analisarEmail() {
-        const textoInput = document.getElementById('emailTexto');
-        // A variável 'arquivoInput' já foi declarada acima
-        const resultadoDiv = document.getElementById('resultado');
-        const categoriaSpan = document.getElementById('categoria');
-        const sugestaoSpan = document.getElementById('sugestao');
-
-        // (O resto da sua função analisarEmail continua exatamente como antes)
-        categoriaSpan.textContent = 'Analisando...';
-        sugestaoSpan.textContent = 'Analisando...';
-        resultadoDiv.style.display = 'block';
-        resultadoDiv.style.opacity = '1';
-
-        const formData = new FormData();
-        let emailText = '';
-
-        try {
-            if (arquivoInput.files.length > 0) {
-                const file = arquivoInput.files[0];
-                if (file.type === 'application/pdf') {
-                    emailText = await extrairTextoDePDF(file);
+            try {
+                // Processa arquivo ou texto
+                if (arquivoInput.files.length > 0) {
+                    const file = arquivoInput.files[0];
+                    if (file.type === 'application/pdf') {
+                        emailText = await extrairTextoDePDF(file);
+                    } else {
+                        emailText = await file.text();
+                    }
+                    formData.append('texto_email', emailText);
+                } else if (textoInput.value.trim() !== '') {
+                    emailText = textoInput.value;
+                    formData.append('texto_email', emailText);
                 } else {
-                    emailText = await file.text();
+                    alert('⚠️ Por favor, cole o texto do e-mail ou anexe um arquivo.');
+                    resultadoDiv.classList.remove('active');
+                    return;
                 }
-                formData.append('texto_email', emailText);
-            } else if (textoInput.value.trim() !== '') {
-                emailText = textoInput.value;
-                formData.append('texto_email', emailText);
-            } else {
-                alert('Por favor, cole o texto do e-mail ou anexe um arquivo.');
-                resultadoDiv.style.display = 'none';
-                resultadoDiv.style.opacity = '0';
-                return;
+
+                // Faz a requisição
+                const response = await fetch('/analisar', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    categoriaSpan.textContent = data.categoria;
+                    sugestaoSpan.textContent = data.sugestao_resposta;
+                } else {
+                    throw new Error(data.erro || 'Ocorreu um erro desconhecido.');
+                }
+            } catch (error) {
+                categoriaSpan.innerHTML = '<span style="color: var(--error);">❌ Erro na análise</span>';
+                sugestaoSpan.innerHTML = '<span style="color: var(--error);">' + error.message + '</span>';
+            }
+        }
+
+        // Extrai texto de PDF
+        async function extrairTextoDePDF(file) {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+            let textoCompleto = '';
+
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const textContent = await page.getTextContent();
+                const pageText = textContent.items.map(item => item.str).join(' ');
+                textoCompleto += pageText + '\n\n';
             }
 
-            const response = await fetch('/analisar', {
-                method: 'POST',
-                body: formData
-            });
-            const data = await response.json();
-
-            if (response.ok) {
-                categoriaSpan.textContent = data.categoria;
-                sugestaoSpan.textContent = data.sugestao_resposta;
-            } else {
-                throw new Error(data.erro || 'Ocorreu um erro desconhecido.');
-            }
-        } catch (error) {
-            categoriaSpan.textContent = 'Erro na análise';
-            sugestaoSpan.textContent = error.message;
+            return textoCompleto;
         }
-    }
-
-    async function extrairTextoDePDF(file) {
-        const arrayBuffer = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
-        let textoCompleto = '';
-        for (let i = 1; i <= pdf.numPages; i++) {
-            const page = await pdf.getPage(i);
-            const textContent = await page.getTextContent();
-            const pageText = textContent.items.map(item => item.str).join(' ');
-            textoCompleto += pageText + '\n\n';
-        }
-        return textoCompleto;
-    }
-</script>
+    </script>
 </body>
+
 </html>
