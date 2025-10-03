@@ -4,113 +4,293 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analisador de E-mail com IA</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            color: #333;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
+    <title>Analisador Inteligente de E-mails</title>
 
-        .container {
-            background-color: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            width: 90%;
-            max-width: 600px;
-        }
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-        h1 {
-            color: #4a4a4a;
-            text-align: center;
-        }
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-        textarea {
-            width: 100%;
-            height: 150px;
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-            font-size: 16px;
-            margin-top: 20px;
-            box-sizing: border-box;
-        }
+<style>
+    :root {
+        --primary-gradient: linear-gradient(45deg, #6a11cb 0%, #2575fc 100%);
+        --background-color: #f0f2f5;
+        --card-background: #ffffff;
+        --text-primary: #1c1e21;
+        --text-secondary: #606770;
+        --border-color: #dddfe2;
+        --success-bg: #e9f5ee;
+        --success-text: #0b8739;
+        --font-family: 'Poppins', sans-serif;
+    }
 
-        button {
-            display: block;
-            width: 100%;
-            padding: 15px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 18px;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: background-color 0.3s;
-        }
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
 
-        button:hover {
-            background-color: #0056b3;
-        }
+    body {
+        font-family: var(--font-family);
+        background-color: var(--background-color);
+        color: var(--text-primary);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 20px;
+    }
 
-        #resultado {
-            margin-top: 30px;
-            background-color: #e9ecef;
-            padding: 20px;
-            border-radius: 5px;
-            display: none;
-        }
+    /* Container Principal */
+    .analyzer-container {
+        background-color: var(--card-background);
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0 12px 28px 0 rgba(0, 0, 0, 0.08);
+        width: 100%;
+        max-width: 700px;
+        transition: all 0.3s ease;
+    }
 
-        #resultado h2 {
-            margin-top: 0;
-            color: #007bff;
-        }
-    </style>
+    /* Cabeçalho */
+    .card-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    .card-header .fa-sparkle {
+        font-size: 2rem;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 10px;
+    }
+    .card-header h1 {
+        font-weight: 600;
+        font-size: 1.8rem;
+        margin-bottom: 5px;
+    }
+    .card-header p {
+        color: var(--text-secondary);
+        font-size: 1rem;
+    }
+
+    /* Área de Texto */
+    .input-area textarea {
+        width: 100%;
+        height: 140px;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        font-size: 16px;
+        font-family: var(--font-family);
+        resize: vertical;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .input-area textarea:focus {
+        outline: none;
+        border-color: #2575fc;
+        box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.2);
+    }
+
+    /* Separador "OU" */
+    .separator {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        margin: 25px 0;
+        color: var(--text-secondary);
+    }
+    .separator::before, .separator::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .separator span {
+        padding: 0 15px;
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+
+    /* Área de Upload de Arquivo */
+    .file-upload-area label {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        padding: 30px;
+        border: 2px dashed var(--border-color);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s, border-color 0.3s;
+        color: var(--text-secondary);
+    }
+    .file-upload-area label:hover {
+        background-color: #f7f8fa;
+        border-color: #2575fc;
+    }
+    .file-upload-area i {
+        font-size: 2.5rem;
+        margin-bottom: 15px;
+        color: #6a11cb;
+    }
+    .file-upload-area span {
+        font-weight: 500;
+    }
+
+    /* Botão Principal */
+    button {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 15px;
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 18px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 30px;
+        transition: transform 0.2s, box-shadow 0.3s;
+    }
+    button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Área de Resultado */
+    #resultado {
+        margin-top: 30px;
+        background-color: var(--card-background);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        display: none; /* Inicia oculto */
+        opacity: 0;
+        transition: opacity 0.5s ease-in-out;
+    }
+    .resultado-header {
+        padding: 15px 20px;
+        background-color: #f7f8fa;
+        border-bottom: 1px solid var(--border-color);
+        border-radius: 8px 8px 0 0;
+    }
+    .resultado-header h2 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0;
+    }
+    .resultado-body {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    .resultado-item {
+        line-height: 1.6;
+    }
+    .item-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-secondary);
+        margin-bottom: 5px;
+    }
+    .item-title i {
+        color: #2575fc;
+    }
+    #categoria, #sugestao {
+        padding-left: 23px; /* Alinha com o texto do título */
+        display: block;
+    }
+</style>
+
 </head>
 
 <body>
-    <div class="container">
-        <h1>Analisador de E-mail com IA</h1>
-        <textarea id="emailTexto" placeholder="Cole o texto do seu e-mail aqui..."></textarea>
-        <button onclick="analisarEmail()">Analisar E-mail</button>
+    <div class="analyzer-container">
+        <div class="card-header">
+            <i class="fas fa-sparkle"></i>
+            <h1>Analisador Inteligente de E-mails</h1>
+            <p>Use o poder da IA para classificar e gerar respostas para seus e-mails instantaneamente.</p>
+        </div>
+
+        <div class="input-area">
+            <textarea id="emailTexto" placeholder="Cole o conteúdo do e-mail aqui..."></textarea>
+        </div>
+
+        <div class="separator">
+            <span>OU</span>
+        </div>
+
+        <div class="file-upload-area">
+            <input type="file" id="emailArquivo" accept=".txt,.eml" hidden>
+            <label for="emailArquivo">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <span>Clique para selecionar ou arraste um arquivo (.txt, .eml)</span>
+            </label>
+        </div>
+        
+        <button onclick="analisarEmail()">
+            <i class="fas fa-rocket"></i> Analisar Agora
+        </button>
+        
         <div id="resultado">
-            <h2>Resultado da Análise</h2>
-            <p><strong>Categoria:</strong> <span id="categoria"></span></p>
-            <p><strong>Resposta Sugerida:</strong> <span id="sugestao"></span></p>
+            <div class="resultado-header">
+                <h2>Resultado da Análise</h2>
+            </div>
+            <div class="resultado-body">
+                <div class="resultado-item">
+                    <div class="item-title">
+                        <i class="fas fa-tags"></i>
+                        <strong>Categoria:</strong>
+                    </div>
+                    <span id="categoria"></span>
+                </div>
+                <div class="resultado-item">
+                    <div class="item-title">
+                        <i class="fas fa-pen-to-square"></i>
+                        <strong>Resposta Sugerida:</strong>
+                    </div>
+                    <span id="sugestao"></span>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
+        // SEU SCRIPT JAVASCRIPT ORIGINAL VEM AQUI
+        // Ele não precisa de alterações para este layout.
         async function analisarEmail() {
-            const texto = document.getElementById('emailTexto').value;
+            const textoInput = document.getElementById('emailTexto');
+            const arquivoInput = document.getElementById('emailArquivo');
             const resultadoDiv = document.getElementById('resultado');
             const categoriaSpan = document.getElementById('categoria');
             const sugestaoSpan = document.getElementById('sugestao');
 
-            if (texto.trim() === '') {
-                alert('Por favor, insira o texto do e-mail.');
+            const formData = new FormData();
+
+            if (arquivoInput.files.length > 0) {
+                formData.append('arquivo_email', arquivoInput.files[0]);
+            } else if (textoInput.value.trim() !== '') {
+                formData.append('texto_email', textoInput.value);
+            } else {
+                alert('Por favor, cole o texto do e-mail ou anexe um arquivo.');
                 return;
             }
 
-            // Mostra um feedback de "carregando"
             categoriaSpan.textContent = 'Analisando...';
             sugestaoSpan.textContent = 'Analisando...';
             resultadoDiv.style.display = 'block';
+            resultadoDiv.style.opacity = '1';
 
             try {
                 const response = await fetch('/analisar', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ email: texto })
+                    body: formData 
                 });
 
                 const data = await response.json();
@@ -122,11 +302,10 @@
                     throw new Error(data.erro || 'Ocorreu um erro desconhecido.');
                 }
             } catch (error) {
-                categoriaSpan.textContent = 'Erro';
+                categoriaSpan.textContent = 'Erro na análise';
                 sugestaoSpan.textContent = error.message;
             }
         }
     </script>
 </body>
-
 </html>
