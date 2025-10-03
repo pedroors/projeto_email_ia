@@ -3,6 +3,7 @@ from transformers import pipeline
 import google.generativeai as genai
 import os
 from dotenv import load_dotenv
+import fitz
 
 load_dotenv()
 
@@ -40,14 +41,26 @@ def analisar():
 
     texto_email = ""
 
-    # NOVO: Lógica para extrair texto do arquivo ou do campo de texto
+    # Lógica modificada para extrair texto do arquivo ou do campo de texto
     # 1. Verifica se um arquivo foi enviado na requisição
     if 'arquivo_email' in request.files:
         arquivo = request.files['arquivo_email']
         if arquivo.filename != '':
             try:
-                # Lê o conteúdo do arquivo e o decodifica como texto (UTF-8 é comum para e-mails)
-                texto_email = arquivo.read().decode('utf-8')
+                # --- INÍCIO DO TRECHO ADICIONADO ---
+                # Verifica a extensão do arquivo para decidir como extrair o texto
+                if arquivo.filename.lower().endswith('.pdf'):
+                    # Abre o fluxo de bytes do arquivo com fitz
+                    doc = fitz.open(stream=arquivo.read(), filetype="pdf")
+                    texto_pdf = ""
+                    for page in doc:
+                        texto_pdf += page.get_text()
+                    texto_email = texto_pdf
+                    doc.close()
+                else:
+                    # Se não for PDF, assume que é texto puro (como .txt, .eml)
+                    texto_email = arquivo.read().decode('utf-8')
+                # --- FIM DO TRECHO ADICIONADO ---
             except Exception as e:
                 return jsonify({'erro': f'Não foi possível ler o arquivo: {e}'}), 400
     
@@ -59,8 +72,7 @@ def analisar():
     if not texto_email:
         return jsonify({'erro': 'Nenhum texto ou arquivo de e-mail fornecido.'}), 400
 
-    # Daqui para baixo, o código é EXATAMENTE O MESMO de antes,
-    # pois a variável `texto_email` já contém o conteúdo que precisamos.
+    # Daqui para baixo, o código continua exatamente o mesmo.
 
     # ETAPA 1: CLASSIFICAR O E-MAIL
     candidate_labels = ["produtivo", "improdutivo", "urgente", "informativo"]
