@@ -5,13 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Analisador Inteligente de E-mails</title>
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js`;</script>
+    
 <style>
     :root {
         --primary-gradient: linear-gradient(45deg, #6a11cb 0%, #2575fc 100%);
@@ -206,6 +206,56 @@
         padding-left: 23px; /* Alinha com o texto do título */
         display: block;
     }
+    .file-info-container {
+    display: none; /* Começa escondido */
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    border: 2px solid var(--border-color); /* Borda sólida para indicar "preenchido" */
+    border-radius: 8px;
+    background-color: #f7f8fa;
+    color: var(--text-primary);
+}
+
+.file-info-container i {
+    font-size: 2rem;
+    color: var(--primary-gradient);
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.file-info-container span {
+    flex-grow: 1;
+    margin: 0 15px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Adiciona "..." se o nome do arquivo for muito longo */
+}
+
+.remove-btn {
+    width: 30px;
+    height: 30px;
+    border: none;
+    background-color: #e4e6eb;
+    color: var(--text-secondary);
+    border-radius: 50%;
+    font-size: 20px;
+    font-weight: bold;
+    line-height: 28px; /* Alinha o "×" verticalmente */
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.remove-btn:hover {
+    background-color: #d8dadf;
+    color: var(--text-primary);
+    transform: none; /* Remove o efeito de levantar do botão principal */
+    box-shadow: none;
+}
 </style>
 
 </head>
@@ -226,13 +276,20 @@
             <span>OU</span>
         </div>
 
-        <div class="file-upload-area">
-            <input type="file" id="emailArquivo" accept=".txt,.eml" hidden>
-            <label for="emailArquivo">
-                <i class="fas fa-cloud-upload-alt"></i>
-                <span>Clique para selecionar ou arraste um arquivo (.txt, .eml)</span>
-            </label>
+    <div class="file-upload-area">
+        <input type="file" id="emailArquivo" accept=".txt,.eml,.pdf" hidden>
+
+        <label for="emailArquivo" id="uploadLabel">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <span>Clique para selecionar ou arraste um arquivo (.txt, .eml, .pdf)</span>
+        </label>
+
+        <div id="fileInfo" class="file-info-container">
+            <i class="fas fa-file-alt"></i>
+            <span id="fileName"></span>
+            <button id="removeFileBtn" class="remove-btn" title="Remover arquivo">&times;</button>
         </div>
+    </div>
         
         <button onclick="analisarEmail()">
             <i class="fas fa-rocket"></i> Analisar Agora
@@ -262,50 +319,104 @@
     </div>
 
     <script>
-        // SEU SCRIPT JAVASCRIPT ORIGINAL VEM AQUI
-        // Ele não precisa de alterações para este layout.
-        async function analisarEmail() {
-            const textoInput = document.getElementById('emailTexto');
-            const arquivoInput = document.getElementById('emailArquivo');
-            const resultadoDiv = document.getElementById('resultado');
-            const categoriaSpan = document.getElementById('categoria');
-            const sugestaoSpan = document.getElementById('sugestao');
+    // Incluindo a configuração do worker do pdf.js
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js`;
 
-            const formData = new FormData();
+    // --- NOVO CÓDIGO PARA FEEDBACK VISUAL ---
+    const arquivoInput = document.getElementById('emailArquivo');
+    const uploadLabel = document.getElementById('uploadLabel');
+    const fileInfoDiv = document.getElementById('fileInfo');
+    const fileNameSpan = document.getElementById('fileName');
+    const removeFileBtn = document.getElementById('removeFileBtn');
 
+    // "Ouvinte" que dispara quando um arquivo é selecionado
+    arquivoInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+            const fileName = this.files[0].name;
+            fileNameSpan.textContent = fileName; // Mostra o nome do arquivo
+
+            // Esconde o botão de upload e mostra as informações do arquivo
+            uploadLabel.style.display = 'none';
+            fileInfoDiv.style.display = 'flex';
+        }
+    });
+
+    // "Ouvinte" que dispara quando o botão de remover é clicado
+    removeFileBtn.addEventListener('click', function() {
+        arquivoInput.value = ''; // Limpa o arquivo do input (MUITO IMPORTANTE)
+
+        // Esconde as informações do arquivo e mostra o botão de upload novamente
+        fileInfoDiv.style.display = 'none';
+        uploadLabel.style.display = 'flex';
+    });
+    // --- FIM DO NOVO CÓDIGO ---
+
+
+    async function analisarEmail() {
+        const textoInput = document.getElementById('emailTexto');
+        // A variável 'arquivoInput' já foi declarada acima
+        const resultadoDiv = document.getElementById('resultado');
+        const categoriaSpan = document.getElementById('categoria');
+        const sugestaoSpan = document.getElementById('sugestao');
+
+        // (O resto da sua função analisarEmail continua exatamente como antes)
+        categoriaSpan.textContent = 'Analisando...';
+        sugestaoSpan.textContent = 'Analisando...';
+        resultadoDiv.style.display = 'block';
+        resultadoDiv.style.opacity = '1';
+
+        const formData = new FormData();
+        let emailText = '';
+
+        try {
             if (arquivoInput.files.length > 0) {
-                formData.append('arquivo_email', arquivoInput.files[0]);
+                const file = arquivoInput.files[0];
+                if (file.type === 'application/pdf') {
+                    emailText = await extrairTextoDePDF(file);
+                } else {
+                    emailText = await file.text();
+                }
+                formData.append('texto_email', emailText);
             } else if (textoInput.value.trim() !== '') {
-                formData.append('texto_email', textoInput.value);
+                emailText = textoInput.value;
+                formData.append('texto_email', emailText);
             } else {
                 alert('Por favor, cole o texto do e-mail ou anexe um arquivo.');
+                resultadoDiv.style.display = 'none';
+                resultadoDiv.style.opacity = '0';
                 return;
             }
 
-            categoriaSpan.textContent = 'Analisando...';
-            sugestaoSpan.textContent = 'Analisando...';
-            resultadoDiv.style.display = 'block';
-            resultadoDiv.style.opacity = '1';
+            const response = await fetch('/analisar', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
 
-            try {
-                const response = await fetch('/analisar', {
-                    method: 'POST',
-                    body: formData 
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    categoriaSpan.textContent = data.categoria;
-                    sugestaoSpan.textContent = data.sugestao_resposta;
-                } else {
-                    throw new Error(data.erro || 'Ocorreu um erro desconhecido.');
-                }
-            } catch (error) {
-                categoriaSpan.textContent = 'Erro na análise';
-                sugestaoSpan.textContent = error.message;
+            if (response.ok) {
+                categoriaSpan.textContent = data.categoria;
+                sugestaoSpan.textContent = data.sugestao_resposta;
+            } else {
+                throw new Error(data.erro || 'Ocorreu um erro desconhecido.');
             }
+        } catch (error) {
+            categoriaSpan.textContent = 'Erro na análise';
+            sugestaoSpan.textContent = error.message;
         }
-    </script>
+    }
+
+    async function extrairTextoDePDF(file) {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+        let textoCompleto = '';
+        for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            const pageText = textContent.items.map(item => item.str).join(' ');
+            textoCompleto += pageText + '\n\n';
+        }
+        return textoCompleto;
+    }
+</script>
 </body>
 </html>
